@@ -1,37 +1,10 @@
 from colorama import Fore
 
-'''
-pdp
-student
-1. kursga qoshilish
-2. kursdan chiqish
-3. kusrlarni korish
-4. exit
-            ----------------------------
-mentor
-1. kurs qoshish
-2. kursni olib tashash
-3. ozi qoshgan kurslarni korish
-4. exit
-----------------------------------------------------------------
 
-1. login
-    -username
-    -password
-2. register
-    -id
-    -ism
-    -username
-    -phone
-    -password
-    -is_student
-students
-courses
-mentors
-'''
 
 import json
 import os
+import bcrypt
 
 
 def file_create():
@@ -44,11 +17,13 @@ def file_create():
 
 
 def check(username, password):
+    password = password.encode()
     with open('users.json', 'r') as u:
         users = json.load(u)
 
     for i in users:
-        if i["username"] == username and i["password"] == password:
+        hashed_password = i["password"].encode()
+        if bcrypt.checkpw(password, hashed_password):
             return True
     return False
 
@@ -80,16 +55,25 @@ def get_id(a):
             return i["id"]
 
 
+# encrypt
+def encrypt(password):
+    salt = bcrypt.gensalt()  # Generate a salt value
+    hashed_password = bcrypt.hashpw(password.encode(), salt)  # Hash the password using bcrypt
+    return hashed_password
+
+
 def add_user(name, username, phone, password, is_student):
     with open('users.json', 'r') as u:
         users = json.load(u)
+
+    password = encrypt(password)
 
     student = {
         "id": len(users) + 1,
         "username": username,
         "name": name,
         "phone": phone,
-        "password": password,
+        "password": password.decode(),
         "courses": [],
         "is_student": is_student
     }
@@ -112,6 +96,18 @@ def add_to_history(id_, a):
         json.dump(users, nu, indent=2)
 
 
+def check_course(cname):
+    with open('courses.json', 'r') as c:
+        courses = json.load(c)
+
+    for i in courses:
+        if i["name"].strip().lower() == cname.strip().lower():
+            print(Fore.LIGHTYELLOW_EX + "This course exited!")
+            print(Fore.LIGHTYELLOW_EX + f"id: {i['id']}. name: {i['name']} price: {i['price']}")
+            return True
+    return False
+
+
 def add_course(mid_):
     with open('courses.json', 'r') as c:
         courses = json.load(c)
@@ -129,14 +125,14 @@ def add_course(mid_):
         }
 
         h = [id_, name, price]
+        if not check_course(name):
+            add_to_history(mid_, h)
 
-        add_to_history(mid_, h)
+            courses.append(course)
 
-        courses.append(course)
-
-        with open("courses.json", "w") as nc:
-            json.dump(courses, nc, indent=2)
-            print(Fore.LIGHTGREEN_EX + 'success!')
+            with open("courses.json", "w") as nc:
+                json.dump(courses, nc, indent=2)
+                print(Fore.LIGHTGREEN_EX + 'success!')
 
 
 def join_course(sid):
@@ -174,7 +170,9 @@ def get_courses(id_):
 
     for i in users:
         if i["id"] == id_:
-            print(Fore.LIGHTBLUE_EX + str(i["courses"]))
+            for b in i["courses"]:
+                print(f"{b[0]} {b[1].title()}  price: {b[2]} ")
+
             return True
     return False
 
@@ -186,25 +184,26 @@ def del_course():
     for i in courses:
         print(Fore.RED + f'{i["id"]}. {i["name"]}')
 
-    s = int(input('Enter course id: '))
-    c = 0
-    for course in courses:
-        if course["id"] == s:
-            courses.pop(c)
+    s = input('Enter course id: ')
+    if s.isdigit():
+        c = 0
+        for course in courses:
+            if course["id"] == s:
+                courses.pop(c)
 
-    with open("users.json", "r") as u:
-        users = json.load(u)
+        with open("users.json", "r") as u:
+            users = json.load(u)
 
-        for user in users:
-            v = 0
-            for j in user["courses"]:
-                if j[0] == s:
-                    user["courses"].pop(v)
-                    v += 1
-    with open("users.json", "w") as f:
-        json.dump(users, f, indent=2)
+            for user in users:
+                v = 0
+                for j in user["courses"]:
+                    if j[0] == s:
+                        user["courses"].pop(v)
+                        v += 1
+        with open("users.json", "w") as f:
+            json.dump(users, f, indent=2)
 
-    with open('courses.json', 'w') as nc:
-        json.dump(courses, nc, indent=2)
-        return True
+        with open('courses.json', 'w') as nc:
+            json.dump(courses, nc, indent=2)
+            return True
     return False
