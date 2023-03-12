@@ -1,41 +1,6 @@
 from colorama import Fore
 import filer
 
-"""
-pdp
-botirjon
-
-1. login
-    -username
-    -password
-    
-2. register
-    -ism
-    -username
-    -phone
-    -password
-    -is_student
-
-    student
-        1. kursga qoshilish
-        2. kursdan chiqish
-        3. kusrlarni korish
-        4. exit
-
-    mentor
-        1. kurs qoshish
-        2. kursni olib tashash
-        3. ozi qoshgan kurslarni korish
-        4. exit
-
-
-
-.json
-oquvchilar
-course
-mentor
-"""
-
 
 class LearningCentre:
     def __init__(self):
@@ -115,7 +80,7 @@ class LearningCentre:
         if self.current_grade == 'student':
             st = '''
         STUDENT
-            
+
         1. kursga qoshilish
         2. kursdan chiqish
         3. kusrlarni korish
@@ -141,7 +106,7 @@ class LearningCentre:
         elif self.current_grade == 'mentor':
             st = '''
             MENTOR
-            
+
             1. kurs qoshish
             2. kursni olib tashash
             3. ozi qoshgan kurslarni korish
